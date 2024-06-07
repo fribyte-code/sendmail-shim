@@ -13,7 +13,7 @@ This program is written in Go, only using modules from the standard library, and
 Provide environment variables at build-time, to make the makefile link these values into the final binary.
 
 To build the program, simply run `make`.
-The easiest strategy for environment is probably to prefix them to this command, like `SMTP_SERVER=foo:587 SMTP_USER=me SMTP_PASSWORD=secret make`. 
+The easiest strategy for environment is probably to prefix them to this command, like `SMTP_SERVER=foo:587 SMTP_USER=me SMTP_PASSWORD=secret LOG_FILE=sendmail-shim.jsonl make`. 
 
 ### Supported flags
 - -t: get recipients from the message (headers provided on stdin)
@@ -33,7 +33,7 @@ This will put you into a reading prompt. Type out headers and email content, the
 
 Simple example:
 ```
-SMTP_SERVER=localhost:25 SMTP_USER=nobody SMTP_PASSWORD=password make --always-make run recipient@example.com
+SMTP_SERVER=localhost:25 SMTP_USER=nobody SMTP_PASSWORD=password LOG_FILE=sendmail-shim.jsonl make --always-make run recipient@example.com
 To: recipient@example.com
 From: sender@example.com
 Content-Type: text/plain

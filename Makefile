@@ -9,10 +9,14 @@ endif
 ifndef SMTP_PASSWORD
 $(error SMTP_PASSWORD build-time variable is not set)
 endif
+ifndef LOG_FILE
+$(error LOG_FILE build-time variable is not set)
+endif
+
 
 sendmail: shim.go
 	CGO_ENABLED=0 go build -o sendmail -ldflags \
-		"-X main.SMTP_SERVER=$(SMTP_SERVER) -X main.SMTP_USER=$(SMTP_USER) -X main.SMTP_PASSWORD=$(SMTP_PASSWORD)" \
+		"-X main.SMTP_SERVER=$(SMTP_SERVER) -X main.SMTP_USER=$(SMTP_USER) -X main.SMTP_PASSWORD=$(SMTP_PASSWORD) -X main.LOG_FILE=$(LOG_FILE)" \
 		shim.go
 
 # Credit to this stackoverflow answer https://stackoverflow.com/a/14061796

@@ -1,6 +1,7 @@
 package main
 
 import (
+	"encoding/json"
 	"fmt"
 	"io"
 	"net"
@@ -8,16 +9,18 @@ import (
 	"os"
 	"regexp"
 	"strings"
+	"time"
 )
 
 // global variables, values linked in at build-time
 var SMTP_SERVER string
 var SMTP_USER string
 var SMTP_PASSWORD string
+var LOG_FILE string
 
 type EmailAddress struct {
-	Name    string
-	Address string
+	Name    string `json:"name"`
+	Address string `json:"address"`
 }
 
 func (a *EmailAddress) StringFormat() string {
@@ -69,15 +72,17 @@ func ParseAddresses(addrs string) []*EmailAddress {
 }
 
 type Email struct {
-	From    *EmailAddress
-	ReplyTo []*EmailAddress
-	To      []*EmailAddress
-	CC      []*EmailAddress
-	BCC     []*EmailAddress
-	Subject string
+	Timestamp time.Time `json:"timestamp"`
 
-	ExtraHeaders string
-	Body         string
+	From    *EmailAddress   `json:"from"`
+	ReplyTo []*EmailAddress `json:"replyTo"`
+	To      []*EmailAddress `json:"to"`
+	CC      []*EmailAddress `json:"cc"`
+	BCC     []*EmailAddress `json:"bcc"`
+	Subject string          `json:"subject"`
+
+	ExtraHeaders string `json:"extraHeaders"`
+	Body         string `json:"body"`
 }
 
 func (e *Email) PopulateFromArgs(args []string) {
@@ -264,12 +269,34 @@ func SendMail(e *Email) {
 	}
 }
 
+func addToLog(logfile string, e *Email) error {
+	data, err := json.Marshal(e)
+	if err != nil {
+		return err
+	}
+
+	file, err := os.OpenFile(logfile, os.O_APPEND|os.O_CREATE|os.O_WRONLY, 0644)
+	if err != nil {
+		return err
+	}
+	defer file.Close()
+
+	_, err = file.Write(append(data, '\n'))
+	if err != nil {
+		return err
+	}
+
+	return nil
+}
+
 func main() {
-	e := Email{}
+	e := Email{Timestamp: time.Now()}
 	e.PopulateFromArgs(os.Args[1:])
 	e.PopulateFromStdin(os.Stdin)
 
 	// TODO: do rewrites
+
+	addToLog(LOG_FILE, &e)
 
 	SendMail(&e)
 }
